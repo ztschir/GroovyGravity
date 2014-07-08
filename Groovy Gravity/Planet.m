@@ -12,10 +12,10 @@
 
 
 - (id) initWithImage: (NSString*) imageName withLocation:(CGPoint) location
-             withMass:(CGFloat) mass withSize:(CGFloat) size{
+             withBodyProperties:(SKPhysicsBody*) properties withSize:(CGFloat) size{
   [self setPlanetImage:imageName];
   [self setLocation:location];
-  [self setMass:mass];
+  [self setBodyProperties:properties];
   [self setSize:size];
   return self;
 }

@@ -18,17 +18,19 @@
 }
 
 -(void)buildSolarMap{
+  SKPhysicsBody *body = [[SKPhysicsBody alloc] init];
+  [body setMass:10.0];
+  [body setDynamic:true];
+  [body setAffectedByGravity:false];
   [self.planetArray addObject:[[Planet alloc] initWithImage:@"GenericPlanet"
                                                withLocation:CGPointMake(50.0, 50.0)
-                                                   withMass:10.0
+                                         withBodyProperties:body
                                                    withSize:0.25]];
-  NSLog(@"planetArray:%@",self.planetArray);
   
 }
 
 
 -(NSArray*)visiblePlanets: (CGRect) screenRect{
-  NSLog(@"screenX:%f  screenY:%f  screenW:%f  screenH:%f",screenRect.origin.x, screenRect.origin.y, screenRect.size.width, screenRect.size.height);
   NSPredicate * predicate = [NSPredicate predicateWithBlock: ^BOOL(id planet, NSDictionary *bind) {
     CGPoint shipLocation = ((Planet*)planet).location;
     return CGRectContainsPoint(screenRect, shipLocation);

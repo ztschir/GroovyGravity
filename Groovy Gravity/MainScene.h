@@ -13,6 +13,10 @@
 @interface MainScene : SKScene
 
 @property CGRect screenLocation;
+@property CGVector shipVelocity;
+@property CGVector shipAcceleration;
+@property CGFloat deltaV;
 @property SolarMap* map;
+@property CGPoint firstTouchLocation;
 
 @end

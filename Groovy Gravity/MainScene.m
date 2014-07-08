@@ -49,46 +49,76 @@
 }
 
 -(void)setupScene{
-  // TODO: Need a better way to set ship location on screen
-  CGPoint location = CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame) - 100.0);
-  SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"Spaceship"];
-  [sprite setScale:0.25];
-  sprite.position = location;
-  [self addChild:sprite];
-  
-  
-  // TODO: set location stuff
-  self.screenLocation = CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height);
-  self.map = [[SolarMap alloc] initWithSize:CGSizeMake(5000.0, 5000.0)];
-  
+  [self drawShip];
   [self drawMap];
   
   //SKAction *action = [SKAction rotateByAngle:M_PI duration:1];
   //[sprite runAction:[SKAction repeatActionForever:action]];
 }
 
+-(void)drawShip{
+  // TODO: Need a better way to set ship location on screen
+  CGPoint location = CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame) - 100.0);
+  SKSpriteNode *sprite = [SKSpriteNode spriteNodeWithImageNamed:@"Spaceship"];
+  [sprite setScale:0.25];
+  sprite.position = location;
+  [self addChild:sprite];
+}
+
 -(void)drawMap{
+  // TODO: set location stuff
+  self.screenLocation = CGRectMake(0.0, 0.0, self.frame.size.width, self.frame.size.height);
+  self.shipVelocity = CGVectorMake(0.0, 0.0);
+  self.shipAcceleration = CGVectorMake(0.0, 0.0);
+  self.map = [[SolarMap alloc] initWithSize:CGSizeMake(5000.0, 5000.0)];
+  
   // TODO: move function to SolarMap
   NSArray* visiblePlanets = [self.map visiblePlanets:self.screenLocation];
-  NSLog(@"Planets:%@",visiblePlanets);
-  NSLog(@"allPlanets:%@",self.map.planetArray);
   for (Planet* planet in visiblePlanets){
     SKSpriteNode *node = [SKSpriteNode spriteNodeWithImageNamed:planet.planetImage];
     [node setPosition:CGPointMake(planet.location.x - self.screenLocation.origin.x,
                                   planet.location.y - self.screenLocation.origin.y)];
     [node setScale:planet.size];
+    [node setPhysicsBody:planet.bodyProperties];
     [self addChild:node];
+  }
+}
+
+-(void)updateVelocity{
+  CGVector temp = self.shipVelocity;
+  self.shipVelocity = CGVectorMake(temp.dx, temp.dy + self.deltaV);
+  [self setVelocity:self.shipVelocity];
+  //  NSLog(@"shipVelDX %f", self.shipVelocity)
+}
+
+-(void)setVelocity:(CGVector) vector{
+  NSArray* visiblePlanets = [self.map visiblePlanets:self.screenLocation];
+  for (Planet* planet in visiblePlanets){
+    vector.dx = -vector.dx;
+    vector.dy = -vector.dy;
+    [planet.bodyProperties setVelocity:vector];
   }
 }
 
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
   UITouch *touch = [touches anyObject];
-  CGPoint location = [touch locationInNode:self];
-  SKNode *node = [self nodeAtPoint:location];
+  self.firstTouchLocation = [touch locationInNode:self];
+  SKNode *node = [self nodeAtPoint:self.firstTouchLocation];
   
   if ([node.name isEqualToString:@"startButtonNode"]) {
     [self removeAllChildren];
     [self setupScene];
+  }
+}
+
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+  UITouch *touch = [touches anyObject];
+  CGPoint location = [touch locationInNode:self];
+  SKNode *node = [self nodeAtPoint:location];
+  if (![node.name isEqualToString:@"startButtonNode"]) {
+    self.deltaV += self.firstTouchLocation.y - location.y;
+    self.firstTouchLocation = location;
+    [self updateVelocity];
   }
 }
 
